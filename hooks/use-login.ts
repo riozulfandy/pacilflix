@@ -11,11 +11,11 @@ export default function useLogin() {
 	const [login, { isLoading }] = useLoginMutation();
 
 	const [formData, setFormData] = useState({
-		email: '',
+		username: '',
 		password: '',
 	});
 
-	const { email, password } = formData;
+	const { username, password } = formData;
 
 	const onChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.target;
@@ -26,20 +26,20 @@ export default function useLogin() {
 	const onSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
-		login({ email, password })
+		login({ username, password })
 			.unwrap()
 			.then(() => {
 				dispatch(setAuth());
-				toast.success('Logged in');
+				toast.success('Berhasil masuk');
 				router.push('/dashboard');
 			})
 			.catch(() => {
-				toast.error('Failed to log in');
+				toast.error('Gagal masuk');
 			});
 	};
 
 	return {
-		email,
+		username,
 		password,
 		isLoading,
 		onChange,

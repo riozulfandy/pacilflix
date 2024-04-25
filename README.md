@@ -1,4 +1,4 @@
-# Full Auth
+# Pacilflix
 
 To run the development server:
 

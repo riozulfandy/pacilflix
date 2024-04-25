@@ -5,11 +5,8 @@ import { Form } from '@/components/forms';
 
 export default function RegisterForm() {
 	const {
-		first_name,
-		last_name,
-		email,
+		username,
 		password,
-		re_password,
 		isLoading,
 		onChange,
 		onSubmit,
@@ -17,24 +14,10 @@ export default function RegisterForm() {
 
 	const config = [
 		{
-			labelText: 'First name',
-			labelId: 'first_name',
+			labelText: 'Username',
+			labelId: 'username',
 			type: 'text',
-			value: first_name,
-			required: true,
-		},
-		{
-			labelText: 'Last name',
-			labelId: 'last_name',
-			type: 'text',
-			value: last_name,
-			required: true,
-		},
-		{
-			labelText: 'Email address',
-			labelId: 'email',
-			type: 'email',
-			value: email,
+			value: username,
 			required: true,
 		},
 		{
@@ -44,20 +27,13 @@ export default function RegisterForm() {
 			value: password,
 			required: true,
 		},
-		{
-			labelText: 'Confirm password',
-			labelId: 're_password',
-			type: 'password',
-			value: re_password,
-			required: true,
-		},
 	];
 
 	return (
 		<Form
 			config={config}
 			isLoading={isLoading}
-			btnText='Sign up'
+			btnText='Daftar'
 			onChange={onChange}
 			onSubmit={onSubmit}
 		/>

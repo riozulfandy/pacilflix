@@ -8,8 +8,8 @@ import { Setup } from '@/components/utils';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-	title: 'Full Auth',
-	description: 'Full Auth application that provides jwt authentication',
+	title: 'Pacilflix',
+	description: 'Pacilflix application that provides jwt authentication',
 };
 
 export default function RootLayout({
@@ -23,8 +23,10 @@ export default function RootLayout({
 				<Provider>
 					<Setup />
 					<Navbar />
-					<div className='mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 my-8'>
+					<div className='bg-black'>
+					<div className='mx-auto max-w-7xl px-2 sm:px-6 lg:px-8'>
 						{children}
+					</div>
 					</div>
 					<Footer />
 				</Provider>

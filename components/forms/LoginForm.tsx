@@ -4,14 +4,14 @@ import { useLogin } from '@/hooks';
 import { Form } from '@/components/forms';
 
 export default function LoginForm() {
-	const { email, password, isLoading, onChange, onSubmit } = useLogin();
+	const { username, password, isLoading, onChange, onSubmit } = useLogin();
 
 	const config = [
 		{
-			labelText: 'Email address',
-			labelId: 'email',
-			type: 'email',
-			value: email,
+			labelText: 'Username',
+			labelId: 'username',
+			type: 'text',
+			value: username,
 			required: true,
 		},
 		{
@@ -19,10 +19,6 @@ export default function LoginForm() {
 			labelId: 'password',
 			type: 'password',
 			value: password,
-			link: {
-				linkText: 'Forgot password?',
-				linkUrl: '/password-reset',
-			},
 			required: true,
 		},
 	];
@@ -31,7 +27,7 @@ export default function LoginForm() {
 		<Form
 			config={config}
 			isLoading={isLoading}
-			btnText='Sign in'
+			btnText='Masuk'
 			onChange={onChange}
 			onSubmit={onSubmit}
 		/>

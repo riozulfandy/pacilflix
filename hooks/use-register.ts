@@ -8,14 +8,11 @@ export default function useRegister() {
 	const [register, { isLoading }] = useRegisterMutation();
 
 	const [formData, setFormData] = useState({
-		first_name: '',
-		last_name: '',
-		email: '',
+		username: '',
 		password: '',
-		re_password: '',
 	});
 
-	const { first_name, last_name, email, password, re_password } = formData;
+	const { username, password } = formData;
 
 	const onChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.target;
@@ -26,23 +23,20 @@ export default function useRegister() {
 	const onSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
-		register({ first_name, last_name, email, password, re_password })
+		register({ username, password })
 			.unwrap()
 			.then(() => {
-				toast.success('Please check email to verify account');
+				toast.success('Berhasil mendaftar');
 				router.push('/auth/login');
 			})
 			.catch(() => {
-				toast.error('Failed to register account');
+				toast.error('Gagal mendaftar');
 			});
 	};
 
 	return {
-		first_name,
-		last_name,
-		email,
+		username,
 		password,
-		re_password,
 		isLoading,
 		onChange,
 		onSubmit,

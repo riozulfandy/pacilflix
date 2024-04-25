@@ -29,11 +29,39 @@ export default function Navbar() {
 	const authLinks = (isMobile: boolean) => (
 		<>
 			<NavLink
-				isSelected={isSelected('/dashboard')}
+				isSelected={isSelected('/tayangan')}
 				isMobile={isMobile}
-				href='/dashboard'
+				href='/tayangan'
 			>
-				Dashboard
+				Tayangan
+			</NavLink>
+			<NavLink
+				isSelected={isSelected('/kontributor')}
+				isMobile={isMobile}
+				href='/kontributor'
+			>
+				Kontributor
+			</NavLink>
+			<NavLink
+				isSelected={isSelected('/favorit')}
+				isMobile={isMobile}
+				href='/favorit'
+			>
+				Favorit
+			</NavLink>
+			<NavLink
+				isSelected={isSelected('/unduhan')}
+				isMobile={isMobile}
+				href='/unduhan'
+			>
+				Unduhan
+			</NavLink>
+			<NavLink
+				isSelected={isSelected('/langganan')}
+				isMobile={isMobile}
+				href='/langganan'
+			>
+				Langganan
 			</NavLink>
 			<NavLink isMobile={isMobile} onClick={handleLogout}>
 				Logout
@@ -44,30 +72,23 @@ export default function Navbar() {
 	const guestLinks = (isMobile: boolean) => (
 		<>
 			<NavLink
-				isSelected={isSelected('/auth/login')}
+				isSelected={isSelected('/trailer')}
 				isMobile={isMobile}
-				href='/auth/login'
+				href='/trailer'
 			>
-				Login
-			</NavLink>
-			<NavLink
-				isSelected={isSelected('/auth/register')}
-				isMobile={isMobile}
-				href='/auth/register'
-			>
-				Register
+				Trailer
 			</NavLink>
 		</>
 	);
 
 	return (
-		<Disclosure as='nav' className='bg-gray-800'>
+		<Disclosure as='nav' className='bg-neutral-900'>
 			{({ open }) => (
 				<>
 					<div className='mx-auto max-w-7xl px-2 sm:px-6 lg:px-8'>
 						<div className='relative flex h-16 items-center justify-between'>
 							<div className='absolute inset-y-0 left-0 flex items-center sm:hidden'>
-								<Disclosure.Button className='inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white'>
+								<Disclosure.Button className='inline-flex items-center justify-center rounded-md p-2 text-white hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white'>
 									<span className='sr-only'>
 										Open main menu
 									</span>
@@ -87,7 +108,7 @@ export default function Navbar() {
 							<div className='flex flex-1 items-center justify-center sm:items-stretch sm:justify-start'>
 								<div className='flex flex-shrink-0 items-center'>
 									<NavLink href='/' isBanner>
-										Full Auth
+										PACILFLIX
 									</NavLink>
 								</div>
 								<div className='hidden sm:ml-6 sm:block'>
