@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-	title: 'Pacilflix | Trailer',
-	description: 'Pacilflix trailer page',
+	title: 'Pacilflix | Tayangan',
+	description: 'Pacilflix tayangan page',
 };
 
 

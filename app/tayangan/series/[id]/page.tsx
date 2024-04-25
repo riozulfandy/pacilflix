@@ -103,14 +103,16 @@ export default function Page({ params }: Props) {
                 <form className="max-w-sm mx-auto">
                 <label htmlFor="rating" className="block mb-2 text-sm font-medium text-gray-300">Rating</label>
                 <select id="rating" className="bg-neutral-900 border border-gray-300 text-white text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full p-2.5">
-                    <option  defaultValue="5">5</option>
-                    <option value="4">4</option>
-                    <option value="3">3</option>
-                    <option value="2">2</option>
+                    <option  defaultValue="0">0</option>
                     <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
                 </select>
                 <label htmlFor="textbox" className="block mt-4 mb-2 text-sm font-medium text-gray-300">Deskripsi Rating</label>
                 <textarea id="textbox" className="bg-neutral-900 border border-gray-300 text-white text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full p-2.5" />
+                <button type="submit" className="flex w-full justify-center mt-4 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-md">Kirim</button>
                 </form>
                 <p className='text-lg font-bold text-white'>
                 Daftar Ulasan:
