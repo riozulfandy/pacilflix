@@ -7,6 +7,7 @@ import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { useLogoutMutation } from '@/redux/features/authApiSlice';
 import { logout as setLogout } from '@/redux/features/authSlice';
 import { NavLink } from '@/components/common';
+import Image from 'next/image';
 
 export default function Navbar() {
 	const pathname = usePathname();
@@ -41,20 +42,6 @@ export default function Navbar() {
 				href='/kontributor'
 			>
 				Kontributor
-			</NavLink>
-			<NavLink
-				isSelected={isSelected('/favorit')}
-				isMobile={isMobile}
-				href='/favorit'
-			>
-				Favorit
-			</NavLink>
-			<NavLink
-				isSelected={isSelected('/unduhan')}
-				isMobile={isMobile}
-				href='/unduhan'
-			>
-				Unduhan
 			</NavLink>
 			<NavLink
 				isSelected={isSelected('/langganan')}
@@ -108,12 +95,20 @@ export default function Navbar() {
 							<div className='flex flex-1 items-center justify-center sm:items-stretch sm:justify-start'>
 								<div className='flex flex-shrink-0 items-center'>
 									<NavLink href='/' isBanner>
-										PACILFLIX
+									<div className="flex items-center">
+										<Image
+											src="/logo.svg"
+											alt="Logo"
+											width={30}
+											height={30}
+										/>
+										<span className="ml-2">PACILFLIX</span>
+									</div>
 									</NavLink>
 								</div>
 								<div className='hidden sm:ml-6 sm:block'>
 									<div className='flex space-x-4'>
-										{isAuthenticated
+									{isAuthenticated
 											? authLinks(false)
 											: guestLinks(false)}
 									</div>
@@ -125,8 +120,8 @@ export default function Navbar() {
 					<Disclosure.Panel className='sm:hidden'>
 						<div className='space-y-1 px-2 pb-3 pt-2'>
 							{isAuthenticated
-								? authLinks(true)
-								: guestLinks(true)}
+								? authLinks(false)
+								: guestLinks(false)}
 						</div>
 					</Disclosure.Panel>
 				</>
