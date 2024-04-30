@@ -13,10 +13,11 @@ const authApiSlice = apiSlice.injectEndpoints({
 			query: ({
 				username,
 				password,
+				negara
 			}) => ({
 				url: '/auth/register',
 				method: 'POST',
-				body: { username, password },
+				body: { username, password, negara },
 			}),
 		}),
 		verify: builder.mutation({

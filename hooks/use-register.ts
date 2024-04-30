@@ -10,9 +10,10 @@ export default function useRegister() {
 	const [formData, setFormData] = useState({
 		username: '',
 		password: '',
+		negara:'',
 	});
 
-	const { username, password } = formData;
+	const { username, password, negara } = formData;
 
 	const onChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.target;
@@ -23,7 +24,7 @@ export default function useRegister() {
 	const onSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
-		register({ username, password })
+		register({ username, password, negara })
 			.unwrap()
 			.then(() => {
 				toast.success('Berhasil mendaftar');
@@ -37,6 +38,7 @@ export default function useRegister() {
 	return {
 		username,
 		password,
+		negara,
 		isLoading,
 		onChange,
 		onSubmit,

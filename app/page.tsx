@@ -14,10 +14,10 @@ export default function Page() {
 				<div className='mx-auto max-w-2xl py-32 sm:py-48 lg:py-56'>
 					<div className='text-center'>
 						<h1 className='text-4xl font-bold tracking-tight text-white sm:text-6xl'>
-							Pacilflix
+							Pacilflix - D16
 						</h1>
 						<p className='mt-6 text-lg leading-8 text-gray-300'>
-							PacilFlix adalah aplikasi streaming yang sederhana, dirancang untuk memberikan akses mudah ke berbagai film dan serial populer.
+							PACILFLIX adalah aplikasi streaming yang sederhana, dirancang untuk memberikan akses mudah ke berbagai film dan serial populer.
 						</p>
 						<div className='mt-10 flex items-center justify-center gap-x-6'>			
 						

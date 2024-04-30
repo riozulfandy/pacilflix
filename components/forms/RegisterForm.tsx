@@ -7,6 +7,7 @@ export default function RegisterForm() {
 	const {
 		username,
 		password,
+		negara,
 		isLoading,
 		onChange,
 		onSubmit,
@@ -25,6 +26,13 @@ export default function RegisterForm() {
 			labelId: 'password',
 			type: 'password',
 			value: password,
+			required: true,
+		},
+		{
+			labelText: 'Negara Asal',
+			labelId: 'negara',
+			type: 'text',
+			value: negara,
 			required: true,
 		},
 	];
