@@ -1,28 +1,35 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import {useRouter , usePathname } from 'next/navigation';
 import { Disclosure } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
-import { useLogoutMutation } from '@/redux/features/authApiSlice';
-import { logout as setLogout } from '@/redux/features/authSlice';
+import { logout as setLogout, setNegara, setUsername } from '@/redux/features/authSlice';
 import { NavLink } from '@/components/common';
 import Image from 'next/image';
+import { query } from '@/db';
+import Cookies from 'js-cookie';
+import { toast } from 'react-toastify';
 
 export default function Navbar() {
 	const pathname = usePathname();
 	const dispatch = useAppDispatch();
+	const router = useRouter();
 
-	const [logout] = useLogoutMutation();
 
 	const { isAuthenticated } = useAppSelector(state => state.auth);
+	const username = Cookies.get('username');
 
 	const handleLogout = () => {
-		logout(undefined)
-			.unwrap()
-			.then(() => {
-				dispatch(setLogout());
-			});
+		query("DELETE FROM pengguna_login WHERE username = $1", [username]).then(() => {
+			Cookies.remove('username');
+			dispatch(setUsername(''));
+			dispatch(setNegara(''));
+			dispatch(setLogout());
+			toast.success('Berhasil keluar');
+		}).catch(() => {
+			toast.error("Terjadi kesalahan");
+		});
 	};
 
 	const isSelected = (path: string) => (pathname.includes(path) ? true : false);
@@ -120,8 +127,8 @@ export default function Navbar() {
 					<Disclosure.Panel className='sm:hidden'>
 						<div className='space-y-1 px-2 pb-3 pt-2'>
 							{isAuthenticated
-								? authLinks(false)
-								: guestLinks(false)}
+								? authLinks(true)
+								: guestLinks(true)}
 						</div>
 					</Disclosure.Panel>
 				</>

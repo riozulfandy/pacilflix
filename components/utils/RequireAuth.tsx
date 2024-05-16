@@ -1,6 +1,6 @@
 'use client';
 
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/redux/hooks';
 import { Spinner } from '@/components/common';
 
@@ -10,6 +10,7 @@ interface Props {
 
 export default function RequireAuth({ children }: Props) {
 	const { isLoading, isAuthenticated } = useAppSelector(state => state.auth);
+	const router = useRouter();
 
 	if (isLoading) {
 		return (
@@ -20,7 +21,7 @@ export default function RequireAuth({ children }: Props) {
 	}
 
 	if (!isAuthenticated) {
-		redirect('/auth/login');
+		router.push('/auth/login');
 	}
 
 	return <>{children}</>;

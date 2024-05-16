@@ -1,11 +1,11 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { useRegisterMutation } from '@/redux/features/authApiSlice';
 import { toast } from 'react-toastify';
+import { query } from '@/db';
 
 export default function useRegister() {
 	const router = useRouter();
-	const [register, { isLoading }] = useRegisterMutation();
+	const [isLoading, setIsLoading] = useState(false);
 
 	const [formData, setFormData] = useState({
 		username: '',
@@ -23,16 +23,17 @@ export default function useRegister() {
 
 	const onSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
+		setIsLoading(true);
 
-		register({ username, password, negara })
-			.unwrap()
-			.then(() => {
-				toast.success('Berhasil mendaftar');
-				router.push('/auth/login');
-			})
-			.catch(() => {
-				toast.error('Gagal mendaftar');
-			});
+		query('INSERT INTO pengguna (username, password, negara_asal) VALUES ($1, $2, $3)', [username, password, negara]).then(() => {
+			setIsLoading(false);
+			toast.success('Akun berhasil dibuat');
+			router.push('/auth/login');
+		}).catch(() => {
+			setIsLoading(false);
+			toast.error('Terjadi kesalahan');
+		});
+		
 	};
 
 	return {

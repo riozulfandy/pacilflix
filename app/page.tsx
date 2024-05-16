@@ -1,13 +1,12 @@
+'use client';
+
 import Link from 'next/link';
-import type { Metadata } from 'next';
+import { useAppSelector } from '@/redux/hooks';
 
 
-export const metadata: Metadata = {
-	title: 'Pacilflix | Home',
-	description: 'Pacilflix home page',
-};
 
 export default function Page() {
+	const { isAuthenticated } = useAppSelector(state => state.auth);
 	return (
 		<main>
 			<div className='relative isolate px-6 pt-14 lg:px-8'>
@@ -20,7 +19,7 @@ export default function Page() {
 							PACILFLIX adalah aplikasi streaming yang sederhana, dirancang untuk memberikan akses mudah ke berbagai film dan serial populer.
 						</p>
 						<div className='mt-10 flex items-center justify-center gap-x-6'>			
-						
+							{!isAuthenticated ? (<>
 								<Link
 								href='/auth/login'
 								className='rounded-md bg-red-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'
@@ -34,7 +33,8 @@ export default function Page() {
 								Buat akun{' '}
 								<span aria-hidden='true'>&rarr;</span>
 								</Link>
-							
+							</>) : (<></>)
+								}
 						</div>
 					</div>
 				</div>
