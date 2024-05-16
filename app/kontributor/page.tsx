@@ -40,9 +40,8 @@ export default function Page() {
                 queryValue = "SELECT c.nama, c.jenis_kelamin, c.kewarganegaraan, 'Penulis skenario' AS tipe FROM contributors c JOIN penulis_skenario ps ON c.id = ps.id";
             }
             const result = await query(queryValue, []);
-            console.log(result);
             setDatas(result);
-            setHeaders(Object.keys(result[0]));
+            if (result.length > 0) setHeaders(Object.keys(result[0]));
         }
 
         fetchData();

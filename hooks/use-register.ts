@@ -29,9 +29,9 @@ export default function useRegister() {
 			setIsLoading(false);
 			toast.success('Akun berhasil dibuat');
 			router.push('/auth/login');
-		}).catch(() => {
+		}).catch((error) => {
 			setIsLoading(false);
-			toast.error('Terjadi kesalahan');
+			toast.error(error.message);
 		});
 		
 	};

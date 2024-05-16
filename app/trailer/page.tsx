@@ -28,12 +28,57 @@ export default function Page() {
     useEffect(() => {
         async function fetchData() {
             let queryValue = "";
-            let queryValue2 = "SELECT * FROM view_peringkat_tayangan";
+            let queryValue2 = `
+            SELECT
+            ROW_NUMBER() OVER (ORDER BY SUM(view_count) DESC) AS "Peringkat",
+            judul AS "Judul",
+            sinopsis_trailer  AS "Sinopsis Trailer",
+            url_video_trailer AS "URL Trailer",
+            release_date_trailer AS "Tanggal Rilis Trailer",
+            SUM(view_count) AS "Total View 7 Hari Terakhir"
+            FROM (
+            SELECT
+                T.id,
+                T.judul,
+                T.sinopsis_trailer,
+                T.url_video_trailer,
+                T.release_date_trailer,
+                CASE
+                WHEN RN.end_date_time >= RN.start_date_time + (F.durasi_film * INTERVAL '1 minute' * 0.70)
+                AND RN.start_date_time BETWEEN CURRENT_DATE - INTERVAL '7 days' AND CURRENT_DATE
+                THEN 1
+                ELSE 0
+                END AS view_count
+            FROM TAYANGAN T
+            JOIN RIWAYAT_NONTON RN ON T.id = RN.id_tayangan
+            LEFT JOIN FILM F ON T.id = F.id_tayangan
+            UNION ALL
+            SELECT
+                T.id,
+                T.judul,
+                T.sinopsis_trailer,
+                T.url_video_trailer,
+                T.release_date_trailer,
+                CASE
+                WHEN RN.end_date_time >= RN.start_date_time + (E.durasi * INTERVAL '1 minute' * 0.70)
+                AND RN.start_date_time BETWEEN CURRENT_DATE - INTERVAL '7 days' AND CURRENT_DATE
+                THEN 1
+                ELSE 0
+                END AS view_count
+            FROM TAYANGAN T
+            JOIN SERIES S ON T.id = S.id_tayangan
+            JOIN EPISODE E ON S.id_tayangan = E.id_series
+            JOIN RIWAYAT_NONTON RN ON E.id_series = RN.id_tayangan
+            ) AS Combined
+            GROUP BY judul, sinopsis_trailer, url_video_trailer, release_date_trailer
+            ORDER BY "Total View 7 Hari Terakhir" DESC
+            LIMIT 10
+            `;
             ;
             if (selectedValue === 'film') {
-                queryValue = 'SELECT tayangan.judul, tayangan.sinopsis_trailer, tayangan.url_video_trailer, tayangan.url_video_trailer, tayangan.release_date_trailer FROM tayangan, film WHERE film.id_tayangan = tayangan.id AND judul ILIKE $1';
+                queryValue = 'SELECT tayangan.judul AS "Judul", tayangan.sinopsis_trailer AS "Sinopsis Trailer", tayangan.url_video_trailer AS "URL Trailer", tayangan.release_date_trailer "Tanggal Rilis Trailer" FROM tayangan, film WHERE film.id_tayangan = tayangan.id AND judul ILIKE $1';
             } else if (selectedValue === 'series') {
-                queryValue = 'SELECT tayangan.judul, tayangan.sinopsis_trailer, tayangan.url_video_trailer, tayangan.url_video_trailer, tayangan.release_date_trailer FROM tayangan, series WHERE series.id_tayangan = tayangan.id AND judul ILIKE $1';
+                queryValue = 'SELECT tayangan.judul AS "Judul", tayangan.sinopsis_trailer AS "Sinopsis Trailer", tayangan.url_video_trailer AS "URL Trailer", tayangan.release_date_trailer "Tanggal Rilis Trailer" FROM tayangan, series WHERE series.id_tayangan = tayangan.id AND judul ILIKE $1';
             }
             const result = await query(queryValue, [`%${search}%`]);
             const result2 = await query(queryValue2, []);
