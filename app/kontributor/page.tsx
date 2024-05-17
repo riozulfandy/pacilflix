@@ -20,24 +20,29 @@ export default function Page() {
             let queryValue = "";
             if (selectedValue === 'semua') {
                 queryValue = `
-                SELECT c.nama, c.jenis_kelamin, c.kewarganegaraan,
-                CASE
-                    WHEN s.id IS NOT NULL THEN 'Sutradara'
-                    WHEN p.id IS NOT NULL THEN 'Pemain'
-                    WHEN ps.id IS NOT NULL THEN 'Penulis skenario'
-                END AS role
+                SELECT c.nama,
+                    CASE
+                        WHEN c.jenis_kelamin = 1 THEN 'Perempuan'
+                        WHEN c.jenis_kelamin = 0 THEN 'Laki-laki'
+                    END AS jenis_kelamin,
+                    c.kewarganegaraan,
+                    CASE
+                        WHEN s.id IS NOT NULL THEN 'Sutradara'
+                        WHEN p.id IS NOT NULL THEN 'Pemain'
+                        WHEN ps.id IS NOT NULL THEN 'Penulis skenario'
+                    END AS role
                 FROM contributors c
                 LEFT JOIN sutradara s ON c.id = s.id
                 LEFT JOIN pemain p ON c.id = p.id
                 LEFT JOIN penulis_skenario ps ON c.id = ps.id
                 `
             } else if (selectedValue === 'sutradara') {
-                queryValue = "SELECT c.nama, c.jenis_kelamin, c.kewarganegaraan, 'Sutradara' AS tipe FROM contributors c JOIN sutradara s ON c.id = s.id";
+                queryValue = `SELECT c.nama, CASE WHEN c.jenis_kelamin = 1 THEN 'Perempuan' WHEN c.jenis_kelamin = 0 THEN 'Laki-laki' END AS jenis_kelamin, c.kewarganegaraan, 'Sutradara' AS tipe FROM contributors c JOIN sutradara s ON c.id = s.id`;
             } else if (selectedValue === 'pemain') {
-                queryValue = "SELECT c.nama, c.jenis_kelamin, c.kewarganegaraan, 'Pemain' AS tipe FROM contributors c JOIN pemain p ON c.id = p.id";
+                queryValue = "SELECT c.nama, CASE WHEN c.jenis_kelamin = 1 THEN 'Perempuan' WHEN c.jenis_kelamin = 0 THEN 'Laki-laki' END AS jenis_kelamin, c.kewarganegaraan, 'Pemain' AS tipe FROM contributors c JOIN pemain p ON c.id = p.id";
             }
             else if (selectedValue === 'penulis') {
-                queryValue = "SELECT c.nama, c.jenis_kelamin, c.kewarganegaraan, 'Penulis skenario' AS tipe FROM contributors c JOIN penulis_skenario ps ON c.id = ps.id";
+                queryValue = "SELECT c.nama, CASE WHEN c.jenis_kelamin = 1 THEN 'Perempuan' WHEN c.jenis_kelamin = 0 THEN 'Laki-laki' END AS jenis_kelamin, c.kewarganegaraan, 'Penulis skenario' AS tipe FROM contributors c JOIN penulis_skenario ps ON c.id = ps.id";
             }
             const result = await query(queryValue, []);
             setDatas(result);

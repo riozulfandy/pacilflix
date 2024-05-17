@@ -30,45 +30,45 @@ export default function Page() {
             let queryValue = "";
             let queryValue2 = `
             SELECT
-            ROW_NUMBER() OVER (ORDER BY SUM(view_count) DESC) AS "Peringkat",
-            judul AS "Judul",
-            sinopsis_trailer  AS "Sinopsis Trailer",
-            url_video_trailer AS "URL Trailer",
-            release_date_trailer AS "Tanggal Rilis Trailer",
-            SUM(view_count) AS "Total View 7 Hari Terakhir"
+                ROW_NUMBER() OVER (ORDER BY SUM(view_count) DESC) AS "Peringkat",
+                judul AS "Judul",
+                sinopsis_trailer AS "Sinopsis Trailer",
+                url_video_trailer AS "URL Trailer",
+                release_date_trailer AS "Tanggal Rilis Trailer",
+                SUM(view_count) AS "Total View 7 Hari Terakhir"
             FROM (
-            SELECT
-                T.id,
-                T.judul,
-                T.sinopsis_trailer,
-                T.url_video_trailer,
-                T.release_date_trailer,
-                CASE
-                WHEN RN.end_date_time >= RN.start_date_time + (F.durasi_film * INTERVAL '1 minute' * 0.70)
-                AND RN.start_date_time BETWEEN CURRENT_DATE - INTERVAL '7 days' AND CURRENT_DATE
-                THEN 1
-                ELSE 0
-                END AS view_count
-            FROM TAYANGAN T
-            JOIN RIWAYAT_NONTON RN ON T.id = RN.id_tayangan
-            LEFT JOIN FILM F ON T.id = F.id_tayangan
-            UNION ALL
-            SELECT
-                T.id,
-                T.judul,
-                T.sinopsis_trailer,
-                T.url_video_trailer,
-                T.release_date_trailer,
-                CASE
-                WHEN RN.end_date_time >= RN.start_date_time + (E.durasi * INTERVAL '1 minute' * 0.70)
-                AND RN.start_date_time BETWEEN CURRENT_DATE - INTERVAL '7 days' AND CURRENT_DATE
-                THEN 1
-                ELSE 0
-                END AS view_count
-            FROM TAYANGAN T
-            JOIN SERIES S ON T.id = S.id_tayangan
-            JOIN EPISODE E ON S.id_tayangan = E.id_series
-            JOIN RIWAYAT_NONTON RN ON E.id_series = RN.id_tayangan
+                SELECT
+                    T.id,
+                    T.judul,
+                    T.sinopsis_trailer,
+                    T.url_video_trailer,
+                    T.release_date_trailer,
+                    CASE
+                        WHEN RN.end_date_time >= RN.start_date_time + (F.durasi_film * INTERVAL '1 minute' * 0.70)
+                            AND RN.end_date_time >= CURRENT_DATE - INTERVAL '7 days'
+                        THEN 1
+                        ELSE 0
+                    END AS view_count
+                FROM TAYANGAN T
+                JOIN RIWAYAT_NONTON RN ON T.id = RN.id_tayangan
+                LEFT JOIN FILM F ON T.id = F.id_tayangan
+                UNION ALL
+                SELECT
+                    T.id,
+                    T.judul,
+                    T.sinopsis_trailer,
+                    T.url_video_trailer,
+                    T.release_date_trailer,
+                    CASE
+                        WHEN RN.end_date_time >= RN.start_date_time + (E.durasi * INTERVAL '1 minute' * 0.70)
+                            AND RN.end_date_time >= CURRENT_DATE - INTERVAL '7 days'
+                        THEN 1
+                        ELSE 0
+                    END AS view_count
+                FROM TAYANGAN T
+                JOIN SERIES S ON T.id = S.id_tayangan
+                JOIN EPISODE E ON S.id_tayangan = E.id_series
+                JOIN RIWAYAT_NONTON RN ON E.id_series = RN.id_tayangan
             ) AS Combined
             GROUP BY judul, sinopsis_trailer, url_video_trailer, release_date_trailer
             ORDER BY "Total View 7 Hari Terakhir" DESC

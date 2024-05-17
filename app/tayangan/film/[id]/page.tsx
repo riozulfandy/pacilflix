@@ -1,9 +1,11 @@
-import type { Metadata } from 'next';
+"use client";
 
-export const metadata: Metadata = {
-	title: 'Pacilflix | Film',
-	description: 'Pacilflix film page',
-};
+import { Table } from "@/components/common";
+import { query } from "@/db";
+import { useAppSelector } from "@/redux/hooks";
+import { ChangeEvent, useEffect, useState } from "react";
+import { toast } from "react-toastify";
+
 
 interface Props {
 	params: {
@@ -13,74 +15,193 @@ interface Props {
 
 
 export default function Page({ params }: Props) {
+    const [datas, setDatas] = useState<any[]>();
+    const [headers, setHeaders] = useState<string[]>();
+    const [datas2, setDatas2] = useState<any[]>();
+    const [headers2, setHeaders2] = useState<string[]>();
+    const [selectedValue, setSelectedValue] = useState('0');
+    const [deskripsiRating, setDeskripsiRating] = useState('');
+    const [slider, setSlider] = useState(0);
+    const [submit, setSubmit] = useState(false);
+
+    const { username } = useAppSelector(state => state.auth);
+
+    const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
+        setSelectedValue(event.target.value);
+    };
+
+    const handleSlider = (event: ChangeEvent<HTMLInputElement>) => {
+        setSlider(parseInt(event.target.value));
+    };
+
+    const handleDeskripsiRating = (event: ChangeEvent<HTMLTextAreaElement>) => {
+        setDeskripsiRating(event.target.value);
+    };
+
+    const handleSubmission = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        let queryValue = `
+        INSERT INTO ULASAN (
+            username,
+            timestamp,
+            id_tayangan,
+            rating,
+            deskripsi
+        ) VALUES (
+            $1,
+            CURRENT_TIMESTAMP,
+            $2,
+            $3,
+            $4
+        )
+        `;
+        query(queryValue, [username, params.id, selectedValue, deskripsiRating]).then(() => {
+            setSubmit(!submit);
+			toast.success('Berhasil memberikan ulasan');
+		}).catch(() => {
+			toast.error('Terjadi kesalahan');
+		});
+    };
+
+    const handleSubmission2 = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const result = await query("SELECT durasi_film FROM film where film.id_tayangan = $1", [params.id]);
+        const durasi = result[0].durasi_film;
+        let queryValue = `
+        INSERT INTO RIWAYAT_NONTON (
+            username,
+            id_tayangan,
+            start_date_time,
+            end_date_time
+        ) VALUES (
+            $1,
+            $2,
+            CURRENT_TIMESTAMP - INTERVAL '${durasi * slider/100} minutes',
+            CURRENT_TIMESTAMP
+        )
+        `;
+        query(queryValue, [username, params.id]).then(() => {
+            setSubmit(!submit);
+			toast.success('Berhasil menonton');
+		}).catch(() => {
+			toast.error('Terjadi kesalahan');
+		});
+    };
+
+
+    useEffect(() => {
+        async function fetchData() {
+            let queryValue = `
+            SELECT 
+                T.judul,
+                T.sinopsis,
+                T.asal_negara,
+                F.release_date_film AS tanggal_rilis_film,
+                F.url_video_film AS url_film,
+                F.durasi_film,
+                COALESCE(SUM(R.rating), 0) AS total_rating,
+                COALESCE(COUNT(DISTINCT RN.start_date_time), 0) AS total_view,
+                STRING_AGG(DISTINCT G.genre, ', ') AS genre,
+                STRING_AGG(DISTINCT P.nama, ', ') AS pemain,
+                STRING_AGG(DISTINCT SC.nama, ', ') AS penulis_skenario,
+                STRING_AGG(DISTINCT P.nama, ', ') AS sutradara
+            FROM TAYANGAN T
+            JOIN FILM F ON T.id = F.id_tayangan
+            LEFT JOIN MEMAINKAN_TAYANGAN MT ON T.id = MT.id_tayangan
+            LEFT JOIN CONTRIBUTORS P ON MT.id_pemain = P.id
+            LEFT JOIN MENULIS_SKENARIO_TAYANGAN MST ON T.id = MST.id_tayangan
+            LEFT JOIN CONTRIBUTORS SC ON MST.id_penulis_skenario = SC.id
+            LEFT JOIN ULASAN R ON T.id = R.id_tayangan
+            LEFT JOIN GENRE_TAYANGAN G ON T.id = G.id_tayangan
+            LEFT JOIN SUTRADARA D ON T.id_sutradara = D.id
+            LEFT JOIN RIWAYAT_NONTON RN ON T.id = RN.id_tayangan
+            WHERE T.id = $1
+            GROUP BY T.id, F.url_video_film, F.release_date_film, F.durasi_film`;
+            let queryValue2 = `
+            SELECT username,rating,deskripsi FROM ULASAN WHERE id_tayangan = $1
+            `;
+            const result = await query(queryValue, [params.id]);
+            const result2 = await query(queryValue2, [params.id]);
+            setDatas(result);
+            setDatas2(result2);
+            if (result.length > 0) setHeaders(Object.keys(result[0]));
+            if (result2.length > 0) setHeaders2(Object.keys(result2[0]));
+        }
+
+        fetchData();
+    }, [submit]);
+
     return (
         <main>
             <div className='relative isolate px-6 py-7 lg:px-8'>
             <div className='mx-auto py-4 sm:py-4 lg:py-10 px-5 sm:px-5 lg:px-10 bg-neutral-900 rounded-xl'>
                 <h1 className='text-3xl font-bold tracking-tight text-white'>
-                Film dengan ID {params.id}
+                {datas && datas[0].judul}
                 </h1>
-                <button className='px-4 py-2 m-2 bg-red-600 hover:bg-red-500 text-white rounded-md'>Tonton</button>
+                &nbsp;
+                <form onSubmit={handleSubmission2}>
+                <div className='flex items-center justify-center'>
+                <input id="default-range" type="range" value={slider} onChange={handleSlider} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                </input>
+                </div>
+                &nbsp;
+                <div className='flex items-center justify-center'>
+                <button type="submit" className='px-4 py-2 m-2 bg-red-600 hover:bg-red-500 text-white rounded-md'>Tonton</button>
+                </div>
+                </form>
                 <button className='px-4 py-2 m-2 bg-green-600 hover:bg-green-500 text-white rounded-md'>Download{' '}<span aria-hidden='true'>&darr;</span></button>
                 <button className='px-4 py-2 m-2 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md'>Favorit{' '}<span aria-hidden='true'>&#9733;</span></button>
                 <p className='text-lg font-bold text-white'>
-                Total View: 
+                Total View: {datas && String(datas[0].total_view)}
                 </p>
+                &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Rating: 
+                Rating: {datas && String(datas[0].total_rating)}
                 </p>
+                &nbsp;  
                 <p className='text-lg font-bold text-white'>
-                Total View: 
+                Sinopsis: {datas && String(datas[0].sinopsis)}
                 </p>
+                &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Sinopsis: 
+                Durasi: {datas && String(datas[0].durasi_film)} menit
                 </p>
+                &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Durasi: 
+                Tanggal Rilis: {datas && String(datas[0].tanggal_rilis_film)}
                 </p>
+                &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Tanggal Rilis: 
+                URL: {datas && String(datas[0].url_film)}
                 </p>
+                &nbsp;
                 <p className='text-lg font-bold text-white'>
-                URL: 
+                Genre: {datas && String(datas[0].genre)}
                 </p>
+                &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Genre:
+                Asal Negara: {datas && String(datas[0].asal_negara)}
                 </p>
-                <ul className='list-disc pl-6 text-white'>
-                    <li>Genre 1</li>
-                    <li>Genre 2</li>
-                    <li>Genre 3</li>
-                </ul>
+                &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Asal Negara:
+                Pemain: {datas && String(datas[0].pemain)}
                 </p>
+                &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Pemain:
+                Penulis Skenario: {datas && String(datas[0].penulis_skenario)}
                 </p>
-                <ul className='list-disc pl-6 text-white'>
-                    <li>Pemain 1</li>
-                    <li>Pemain 2</li>
-                    <li>Pemain 3</li>
-                </ul>
+                &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Penulis Skenario:
+                Sutradara: {datas && String(datas[0].sutradara)}
                 </p>
-                <ul className='list-disc pl-6 text-white'>
-                    <li>Penulis 1</li>
-                    <li>Penulis 2</li>
-                    <li>Penulis 3</li>
-                </ul>
-                <p className='text-lg font-bold text-white'>
-                Sutradara: 
-                </p>
+                &nbsp;
                 <h1 className='text-3xl font-bold tracking-tight text-white py-4'>
                  Ulasan
                 </h1>
-                <form className="max-w-sm mx-auto">
+                <form className="max-w-sm mx-auto" onSubmit={handleSubmission}>
                 <label htmlFor="rating" className="block mb-2 text-sm font-medium text-gray-300">Rating</label>
-                <select id="rating" className="bg-neutral-900 border border-gray-300 text-white text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full p-2.5">
-                    <option  defaultValue="0">0</option>
+                <select value={selectedValue} onChange={handleChange} id="rating" className="bg-neutral-900 border border-gray-300 text-white text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full p-2.5">
+                    <option  defaultValue="0" value="0">0</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -88,17 +209,13 @@ export default function Page({ params }: Props) {
                     <option value="5">5</option>
                 </select>
                 <label htmlFor="textbox" className="block mt-4 mb-2 text-sm font-medium text-gray-300">Deskripsi Rating</label>
-                <textarea id="textbox" className="bg-neutral-900 border border-gray-300 text-white text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full p-2.5" />
+                <textarea value={deskripsiRating} onChange={handleDeskripsiRating} id="textbox" className="bg-neutral-900 border border-gray-300 text-white text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full p-2.5" />
                 <button type="submit" className="flex w-full justify-center mt-4 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-md">Kirim</button>
                 </form>
                 <p className='text-lg font-bold text-white'>
                 Daftar Ulasan:
                 </p>
-                <ul className='list-disc pl-6 text-white'>
-                    <li>Ulasan 1</li>
-                    <li>Ulasan 2</li>
-                    <li>Ulasan 3</li>
-                </ul>
+                {datas2 && headers2 && <Table headers={headers2} data={datas2} />}
             </div>
             </div>			
         </main>

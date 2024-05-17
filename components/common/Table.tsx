@@ -6,16 +6,17 @@ interface Props {
     hasAction? : boolean;
     linkAction? : string;
     dontShowId? : boolean;
+    hasJenis? : boolean;
 }
 
 
-export default function Table({headers, data, hasAction, linkAction, dontShowId} : Props) {
+export default function Table({headers, data, hasAction, linkAction, dontShowId, hasJenis} : Props) {
     return (
         <table className="w-full text-sm text-left rtl:text-right text-gray-300">
                 <thead className="text-xs uppercase bg-neutral-900 text-white">
                         <tr>
                         {headers.map((header, index) => (
-                            dontShowId && index === 0 ? null : <th scope="col" className="px-6 py-3" key={index}>{header}</th>
+                            (dontShowId && index === 0) || (hasJenis && index === 1) ? null : <th key={index} scope="col" className="px-6 py-3">{header}</th>
                         ))
                         }
                         {hasAction && <th scope="col" className="px-6 py-3">Action</th>}
@@ -25,10 +26,10 @@ export default function Table({headers, data, hasAction, linkAction, dontShowId}
                     {data.map((row, index) => (
                         <tr key={index} className="bg-neutral-900 border-b border-gray-300">
                             {Object.values(row).map((value, valueIndex) => (
-                                dontShowId && valueIndex === 0 ? null : <td key={valueIndex} className="px-6 py-4">{String(value)}</td>
+                                (dontShowId && valueIndex === 0) || (hasJenis && valueIndex === 1) ? null : <td key={valueIndex} className="px-6 py-4">{String(value)}</td>
                             ))}
                             {hasAction && <td className="px-6 py-4"><Link
-								href={'/' + linkAction + '/' + row.id}
+								href={'/' + linkAction + '/' + (hasJenis ? row.jenis + '/' : "") + row.id}
 								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
 								>
 								<span aria-hidden='true'>&rarr;</span>

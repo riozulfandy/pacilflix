@@ -40,14 +40,14 @@ export default function Page({params}: Props) {
         VALUES (
             $1,
             CURRENT_DATE,
-            CURRENT_DATE + INTERVAL '1 month',
+            CURRENT_DATE + INTERVAL '30 days',
             $2,
             $3,
             CURRENT_TIMESTAMP
         )
         `;
         query(queryValue, [username, params.paket, selectedValue]).then(() => {
-			toast.success('Akun berhasil dibuat');
+			toast.success('Berhasil berlangganan');
 			router.push('/langganan');
 		}).catch(() => {
 			toast.error('Terjadi kesalahan');

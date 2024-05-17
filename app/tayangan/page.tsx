@@ -1,13 +1,98 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
+'use client';
 
-export const metadata: Metadata = {
-	title: 'Pacilflix | Tayangan',
-	description: 'Pacilflix tayangan page',
-};
+import { Table } from '@/components/common';
+import { query } from '@/db';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 
 export default function Page() {
+    const [datas, setDatas] = useState<any[]>();
+    const [datas2, setDatas2] = useState<any[]>();
+    const [headers, setHeaders] = useState<string[]>();
+    const [headers2, setHeaders2] = useState<string[]>();
+    const [selectedValue, setSelectedValue] = useState('film');
+    const [search, setSearch] = useState('');
+
+
+    const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
+        setSelectedValue(event.target.value);
+    };
+
+
+    const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
+        setSearch(event.target.value);
+    }
+
+
+    useEffect(() => {
+        async function fetchData() {
+            let queryValue = "";
+            let queryValue2 = `
+            SELECT
+                id AS "id",
+                jenis_tayangan AS "jenis",
+                ROW_NUMBER() OVER (ORDER BY SUM(view_count) DESC) AS "Peringkat",
+                judul AS "Judul",
+                sinopsis_trailer AS "Sinopsis Trailer",
+                url_video_trailer AS "URL Trailer",
+                release_date_trailer AS "Tanggal Rilis Trailer",
+                SUM(view_count) AS "Total View 7 Hari Terakhir"
+            FROM (
+                SELECT
+                    T.id,
+                    T.judul,
+                    T.sinopsis_trailer,
+                    T.url_video_trailer,
+                    T.release_date_trailer,
+                    'film' AS jenis_tayangan,
+                    CASE
+                        WHEN RN.end_date_time >= RN.start_date_time + (F.durasi_film * INTERVAL '1 minute' * 0.70)
+                            AND RN.end_date_time >= CURRENT_DATE - INTERVAL '7 days'
+                        THEN 1
+                        ELSE 0
+                    END AS view_count
+                FROM TAYANGAN T
+                JOIN RIWAYAT_NONTON RN ON T.id = RN.id_tayangan
+                LEFT JOIN FILM F ON T.id = F.id_tayangan
+                UNION ALL
+                SELECT
+                    T.id,
+                    T.judul,
+                    T.sinopsis_trailer,
+                    T.url_video_trailer,
+                    T.release_date_trailer,
+                    'series' AS jenis_tayangan,
+                    CASE
+                        WHEN RN.end_date_time >= RN.start_date_time + (E.durasi * INTERVAL '1 minute' * 0.70)
+                            AND RN.end_date_time >= CURRENT_DATE - INTERVAL '7 days'
+                        THEN 1
+                        ELSE 0
+                    END AS view_count
+                FROM TAYANGAN T
+                JOIN SERIES S ON T.id = S.id_tayangan
+                JOIN EPISODE E ON S.id_tayangan = E.id_series
+                JOIN RIWAYAT_NONTON RN ON E.id_series = RN.id_tayangan
+            ) AS Combined
+            GROUP BY judul, sinopsis_trailer, url_video_trailer, release_date_trailer, id, jenis
+            ORDER BY "Total View 7 Hari Terakhir" DESC
+            LIMIT 10
+            `;
+            ;
+            if (selectedValue === 'film') {
+                queryValue = 'SELECT tayangan.id AS "id", tayangan.judul AS "Judul", tayangan.sinopsis_trailer AS "Sinopsis Trailer", tayangan.url_video_trailer AS "URL Trailer", tayangan.release_date_trailer "Tanggal Rilis Trailer" FROM tayangan, film WHERE film.id_tayangan = tayangan.id AND judul ILIKE $1';
+            } else if (selectedValue === 'series') {
+                queryValue = 'SELECT tayangan.id AS "id", tayangan.judul AS "Judul", tayangan.sinopsis_trailer AS "Sinopsis Trailer", tayangan.url_video_trailer AS "URL Trailer", tayangan.release_date_trailer "Tanggal Rilis Trailer" FROM tayangan, series WHERE series.id_tayangan = tayangan.id AND judul ILIKE $1';
+            }
+            const result = await query(queryValue, [`%${search}%`]);
+            const result2 = await query(queryValue2, []);
+            setDatas(result);
+            setDatas2(result2);
+            if (result.length > 0) setHeaders(Object.keys(result[0]));
+            if (result2.length > 0) setHeaders2(Object.keys(result2[0]));
+        }
+
+        fetchData();
+    }, [selectedValue, search]);
 	return (
 		<main>			
 				<h2 className='py-8 text-3xl font-bold tracking-tight text-white sm:text-5xl'>
@@ -17,320 +102,11 @@ export default function Page() {
                 <label htmlFor="country" className="block mb-2 text-sm font-medium text-gray-300">Opsi</label>
                 <select id="country" className="bg-neutral-900 border border-gray-300 text-white text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full p-2.5">
                     <option  defaultValue="global">Global</option>
-                    <option value="negara">Negara</option>
                 </select>
                 </form>
                 <div className="py-8">
                 <div className="relative overflow-x-auto shadow-md rounded-lg">
-                    <table className="w-full text-sm text-left rtl:text-right text-gray-300">
-                        <thead className="text-xs uppercase bg-neutral-900 text-white">
-                            <tr>
-                                <th scope="col" className="px-6 py-3">
-                                    Peringkat
-                                </th>
-                                <th scope="col" className="px-6 py-3">
-                                    Judul
-                                </th>
-                                <th scope="col" className="px-6 py-3">
-                                    Sinopsis Trailer
-                                </th>
-                                <th scope="col" className="px-6 py-3">
-                                    Url Trailer
-                                </th>
-                                <th scope="col" className="px-6 py-3">
-                                    Tanggal Rilis Trailer
-                                </th>
-                                <th scope="col" className="px-6 py-3">
-                                    Total View 7 Hari Terakhir
-                                </th>
-                                <th scope="col" className="px-6 py-3">
-                                    Tayangan
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    1
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                    1000
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    2
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                    1000
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    3
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                    1000
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    4
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                    1000
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    5
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                    1000
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    6
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                    1000
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    7
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                    1000
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    8
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                    1000
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    9
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                    1000
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    10
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                    1000
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                {datas2 && headers2 && <Table headers={headers2} data={datas2} dontShowId={true} hasAction={true} linkAction='tayangan' hasJenis={true} />}
                 </div>
                 </div>
                 <h2 className='py-8 text-3xl font-bold tracking-tight text-white sm:text-5xl'>
@@ -338,170 +114,16 @@ export default function Page() {
 				</h2>
                 <form className="max-w-sm mx-auto">
                 <label htmlFor="tayangan" className="block mb-2 text-sm font-medium text-gray-300">Jenis tayangan</label>
-                <select id="tayangan" className="bg-neutral-900 border border-gray-300 text-white text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full p-2.5">
-                    <option  defaultValue="film">Film</option>
+                <select value={selectedValue} onChange={handleChange} id="tayangan" className="bg-neutral-900 border border-gray-300 text-white text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full p-2.5">
+                    <option  defaultValue="film" value="film">Film</option>
                     <option value="series">Series</option>
                 </select>
                 <label htmlFor="search" className="block mt-4 mb-2 text-sm font-medium text-gray-300">Cari judul</label>
-                <input id="search" type="text" className="bg-neutral-900 border border-gray-300 text-white text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full p-2.5" placeholder="Search..." />
+                <input value={search} onChange={handleSearch} id="search" type="text" className="bg-neutral-900 border border-gray-300 text-white text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full p-2.5" placeholder="Search..." />
                 </form>
                 <div className="py-8">
                 <div className="relative overflow-x-auto shadow-md rounded-lg">
-                <table className="w-full text-sm text-left rtl:text-right text-gray-300">
-                        <thead className="text-xs uppercase bg-neutral-900 text-white">
-                            <tr>
-                                <th scope="col" className="px-6 py-3">
-                                    Judul
-                                </th>
-                                <th scope="col" className="px-6 py-3">
-                                    Sinopsis Trailer
-                                </th>
-                                <th scope="col" className="px-6 py-3">
-                                    Url Trailer
-                                </th>
-                                <th scope="col" className="px-6 py-3">
-                                    Tanggal Rilis Trailer
-                                </th>
-                                <th scope="col" className="px-6 py-3">
-                                    Tayangan
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                            <tr className="bg-neutral-900 border-b border-gray-300">
-                                <td className="px-6 py-4">
-                                    Ini judul
-                                </td>
-                                <td className="px-6 py-4">
-                                    Ini Sinopsis
-                                </td>
-                                <td className="px-6 py-4">
-                                <a href="#" className="font-medium text-red-600 hover:underline">Ini url trailer</a>
-                                </td>
-                                <td className="px-6 py-4">
-                                    2021-10-10
-                                </td>
-                                <td className="px-6 py-4">
-                                <Link
-								href='/tayangan/film/1'
-								className='p-3 font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg'
-								>
-								<span aria-hidden='true'>&rarr;</span>
-								</Link>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                {datas && headers && <Table headers={headers} data={datas} dontShowId={true} hasAction={true} linkAction={"tayangan/" + selectedValue}/>}
                 </div>
                 </div>
 		</main>
