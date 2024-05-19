@@ -99,7 +99,7 @@ export default function Page({ params }: Props) {
                 F.release_date_film AS tanggal_rilis_film,
                 F.url_video_film AS url_film,
                 F.durasi_film,
-                COALESCE(SUM(R.rating), 0) AS total_rating,
+                COALESCE(ROUND(AVG(R.rating), 1), 0) AS total_rating,
                 COALESCE(COUNT(DISTINCT RN.start_date_time), 0) AS total_view,
                 STRING_AGG(DISTINCT G.genre, ', ') AS genre,
                 STRING_AGG(DISTINCT P.nama, ', ') AS pemain,
@@ -152,47 +152,49 @@ export default function Page({ params }: Props) {
                 <button className='px-4 py-2 m-2 bg-green-600 hover:bg-green-500 text-white rounded-md'>Download{' '}<span aria-hidden='true'>&darr;</span></button>
                 <button className='px-4 py-2 m-2 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md'>Favorit{' '}<span aria-hidden='true'>&#9733;</span></button>
                 <p className='text-lg font-bold text-white'>
-                Total View: {datas && String(datas[0].total_view)}
+                Total View: <span className='font-normal'>{datas && String(datas[0].total_view)}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Rating: {datas && String(datas[0].total_rating)}
+                Rating: <span className='font-normal'>{datas && String(datas[0].total_rating)}</span>
                 </p>
                 &nbsp;  
                 <p className='text-lg font-bold text-white'>
-                Sinopsis: {datas && String(datas[0].sinopsis)}
+                Sinopsis: <span className='font-normal'>{datas && String(datas[0].sinopsis)}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Durasi: {datas && String(datas[0].durasi_film)} menit
+                Durasi: <span className='font-normal'>{datas && String(datas[0].durasi_film)} menit</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Tanggal Rilis: {datas && String(datas[0].tanggal_rilis_film)}
+                Tanggal Rilis: <span className='font-normal'>{datas && datas[0].tanggal_rilis_film.toISOString().substring(0,10)}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                URL: {datas && String(datas[0].url_film)}
+                URL: <a href={datas && String(datas[0].url_film)} className='font-normal text-red-600 hover:text-red-500'>
+                        Link Film
+                    </a>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Genre: {datas && String(datas[0].genre)}
+                Genre: <span className='font-normal'>{datas && String(datas[0].genre)}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Asal Negara: {datas && String(datas[0].asal_negara)}
+                Asal Negara: <span className='font-normal'>{datas && String(datas[0].asal_negara)}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Pemain: {datas && String(datas[0].pemain)}
+                Pemain: <span className='font-normal'>{datas && String(datas[0].pemain)}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Penulis Skenario: {datas && String(datas[0].penulis_skenario)}
+                Penulis Skenario: <span className='font-normal'>{datas && String(datas[0].penulis_skenario)}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Sutradara: {datas && String(datas[0].sutradara)}
+                Sutradara: <span className='font-normal'>{datas && String(datas[0].sutradara)}</span>
                 </p>
                 &nbsp;
                 <h1 className='text-3xl font-bold tracking-tight text-white py-4'>

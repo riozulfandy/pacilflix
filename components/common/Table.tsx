@@ -26,7 +26,7 @@ export default function Table({headers, data, hasAction, linkAction, dontShowId,
                     {data.map((row, index) => (
                         <tr key={index} className="bg-neutral-900 border-b border-gray-300">
                             {Object.values(row).map((value, valueIndex) => (
-                                (dontShowId && valueIndex === 0) || (hasJenis && valueIndex === 1) ? null : <td key={valueIndex} className="px-6 py-4">{String(value)}</td>
+                                (dontShowId && valueIndex === 0) || (hasJenis && valueIndex === 1) ? null : <td key={valueIndex} className="px-6 py-4">{value instanceof Date ? value.toISOString().substring(0,10) : (String(value).includes("http") ? <a href={String(value)} className="text-red-600 hover:text-red-500">Link</a> : String(value))}</td>
                             ))}
                             {hasAction && <td className="px-6 py-4"><Link
 								href={'/' + linkAction + '/' + (hasJenis ? row.jenis + '/' : "") + row.id}

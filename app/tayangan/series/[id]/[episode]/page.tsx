@@ -115,19 +115,19 @@ export default function Page({ params }: Props) {
                 </ul>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Sinopsis Episode: {datas && datas[0].sinopsis_episode}
+                Sinopsis Episode: <span className='font-normal'>{datas && datas[0].sinopsis_episode}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Durasi Episode: {datas && datas[0].durasi_episode} menit
+                Durasi Episode: <span className='font-normal'>{datas && datas[0].durasi_episode} menit</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                URL Episode: {datas && datas[0].url_episode}
+                URL Episode: <a className='font-normal text-red-600 hover:text-red-500' href={datas && datas[0].url_episode}>Link Episode</a>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Tanggal Rilis Episode: {datas && String(datas[0].tanggal_rilis_episode)}
+                Tanggal Rilis Episode: <span className='font-normal'>{datas && datas[0].tanggal_rilis_episode.toISOString().substring(0,10)}</span>
                 </p>
             </div>
             </div>

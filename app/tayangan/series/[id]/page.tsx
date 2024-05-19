@@ -70,8 +70,8 @@ export default function Page({ params }: Props) {
                 T.judul,
                 T.sinopsis,
                 T.asal_negara,
-                COALESCE(SUM(R.rating), 0) AS total_rating,
-                COALESCE(COUNT(R.rating), 0) AS total_view,
+                COALESCE(ROUND(AVG(R.rating), 1), 0) AS total_rating,
+                COALESCE(COUNT(DISTINCT RN.start_date_time), 0) AS total_view,
                 STRING_AGG(DISTINCT P.nama, ', ') AS pemain,
                 STRING_AGG(DISTINCT SC.nama, ', ') AS penulis_skenario,
                 STRING_AGG(DISTINCT P.nama, ', ') AS sutradara
@@ -84,6 +84,7 @@ export default function Page({ params }: Props) {
             LEFT JOIN CONTRIBUTORS SC ON MST.id_penulis_skenario = SC.id
             LEFT JOIN ULASAN R ON T.id = R.id_tayangan
             LEFT JOIN SUTRADARA D ON T.id_sutradara = D.id
+            LEFT JOIN RIWAYAT_NONTON RN ON T.id = RN.id_tayangan
             WHERE T.id = $1
             GROUP BY T.id`;
             let queryValue2 = `
@@ -129,31 +130,31 @@ export default function Page({ params }: Props) {
                 <button className='px-4 py-2 m-2 bg-green-600 hover:bg-green-500 text-white rounded-md'>Download{' '}<span aria-hidden='true'>&darr;</span></button>
                 <button className='px-4 py-2 m-2 bg-yellow-600 hover:bg-yellow-500 text-white rounded-md'>Favorit{' '}<span aria-hidden='true'>&#9733;</span></button>
                 <p className='text-lg font-bold text-white'>
-                Total View: {datas && String(datas[0].total_view)}
+                Total View: <span className='font-normal'>{datas && String(datas[0].total_view)}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Rating: {datas && String(datas[0].total_rating)}
+                Rating: <span className='font-normal'>{datas && String(datas[0].total_rating)}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Sinopsis: {datas && String(datas[0].sinopsis)}
+                Sinopsis: <span className='font-normal'>{datas && String(datas[0].sinopsis)}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Asal Negara: {datas && String(datas[0].asal_negara)}
+                Asal Negara: <span className='font-normal'>{datas && String(datas[0].asal_negara)}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Pemain: {datas && String(datas[0].pemain)}
+                Pemain: <span className='font-normal'>{datas && String(datas[0].pemain)}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Penulis Skenario: {datas && String(datas[0].penulis_skenario)}
+                Penulis Skenario: <span className='font-normal'>{datas && String(datas[0].penulis_skenario)}</span>
                 </p>
                 &nbsp;
                 <p className='text-lg font-bold text-white'>
-                Sutradara: {datas && String(datas[0].sutradara)}
+                Sutradara: <span className='font-normal'>{datas && String(datas[0].sutradara)}</span>
                 </p>
                 &nbsp;
                 <h1 className='text-3xl font-bold tracking-tight text-white py-4'>

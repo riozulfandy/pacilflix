@@ -73,7 +73,7 @@ export default function Page() {
                 JOIN EPISODE E ON S.id_tayangan = E.id_series
                 JOIN RIWAYAT_NONTON RN ON E.id_series = RN.id_tayangan
             ) AS Combined
-            GROUP BY judul, sinopsis_trailer, url_video_trailer, release_date_trailer, id, jenis
+            GROUP BY judul, sinopsis_trailer, url_video_trailer, release_date_trailer, id, jenis_tayangan
             ORDER BY "Total View 7 Hari Terakhir" DESC
             LIMIT 10
             `;
