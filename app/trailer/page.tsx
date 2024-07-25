@@ -1,7 +1,7 @@
 'use client';
 
 
-import { Table } from '@/components/common';
+import { Spinner, Table } from '@/components/common';
 import { query } from '@/db';
 import { useState, useEffect, ChangeEvent } from 'react';
 
@@ -15,6 +15,7 @@ export default function Page() {
     const [headers2, setHeaders2] = useState<string[]>();
     const [selectedValue, setSelectedValue] = useState('film');
     const [search, setSearch] = useState('');
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
         setSelectedValue(event.target.value);
@@ -86,6 +87,7 @@ export default function Page() {
             setDatas2(result2);
             if (result.length > 0) setHeaders(Object.keys(result[0]));
             if (result2.length > 0) setHeaders2(Object.keys(result2[0]));
+            setIsLoading(false);
         }
 
         fetchData();
@@ -103,7 +105,7 @@ export default function Page() {
                 </form>
                 <div className="py-8">
                 <div className="relative overflow-x-auto shadow-md rounded-lg">
-                {datas2 && headers2 && <Table headers={headers2} data={datas2}/>}
+                {isLoading ? <div className="flex items-center justify-center"><Spinner lg /></div> : datas2 && headers2 && <Table headers={headers2} data={datas2}/>}
                 </div>
                 </div>
                 <h2 className='py-8 text-3xl font-bold tracking-tight text-white sm:text-5xl'>
@@ -120,7 +122,7 @@ export default function Page() {
                 </form>
                 <div className="py-8">
                 <div className="relative overflow-x-auto shadow-md rounded-lg">
-                {datas && headers && <Table headers={headers} data={datas}/>}
+                {isLoading ? <div className="flex items-center justify-center"><Spinner lg /></div> : datas && headers && <Table headers={headers} data={datas}/>}
                 </div>
                 </div>
 		</main>

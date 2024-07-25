@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Table } from "@/components/common";
+import { Spinner, Table } from "@/components/common";
 import { query } from "@/db";
 import { useAppSelector } from "@/redux/hooks";
 import { ChangeEvent, useEffect, useState } from "react";
@@ -25,6 +25,8 @@ export default function Page({ params }: Props) {
     const [selectedValue, setSelectedValue] = useState('0');
     const [deskripsiRating, setDeskripsiRating] = useState('');
     const [submit, setSubmit] = useState(false);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     const { username } = useAppSelector(state => state.auth);
 
@@ -38,6 +40,7 @@ export default function Page({ params }: Props) {
 
     const handleSubmission = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        setIsSubmitting(true);
         let queryValue = `
         INSERT INTO ULASAN (
             username,
@@ -54,6 +57,7 @@ export default function Page({ params }: Props) {
         )
         `;
         query(queryValue, [username, params.id, selectedValue, deskripsiRating]).then(() => {
+            setIsSubmitting(false);
             setSubmit(!submit);
 			toast.success('Berhasil memberikan ulasan');
 		}).catch(() => {
@@ -65,6 +69,7 @@ export default function Page({ params }: Props) {
 
     useEffect(() => {
         async function fetchData() {
+            setIsLoading(true);
             let queryValue = `
             SELECT 
                 T.judul,
@@ -102,6 +107,7 @@ export default function Page({ params }: Props) {
             if (result.length > 0) setHeaders(Object.keys(result[0]));
             if (result2.length > 0) setHeaders2(Object.keys(result2[0]));
             if (result3.length > 0) setHeaders3(Object.keys(result3[0]));
+            setIsLoading(false);
         }
 
         fetchData();
@@ -110,6 +116,7 @@ export default function Page({ params }: Props) {
     return (
         <main>
             <div className='relative isolate px-6 py-7 lg:px-8'>
+            {isLoading ? <div className="flex items-center justify-center"><Spinner lg /></div> : 
             <div className='mx-auto py-4 sm:py-4 lg:py-10 px-5 sm:px-5 lg:px-10 bg-neutral-900 rounded-xl'>
                 <h1 className='text-3xl font-bold tracking-tight text-white py-4'>
                 {datas && datas[0].judul}
@@ -172,13 +179,13 @@ export default function Page({ params }: Props) {
                 </select>
                 <label htmlFor="textbox" className="block mt-4 mb-2 text-sm font-medium text-gray-300">Deskripsi Rating</label>
                 <textarea id="textbox" className="bg-neutral-900 border border-gray-300 text-white text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full p-2.5" value={deskripsiRating} onChange={handleDeskripsiRating} />
-                <button type="submit" className="flex w-full justify-center mt-4 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-md">Kirim</button>
+                <button type="submit" className="flex w-full justify-center mt-4 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-md" disabled={isLoading || isSubmitting}>{isLoading || isSubmitting ? <Spinner sm /> : "Kirim"}</button>
                 </form>
                 <p className='text-lg font-bold text-white'>
                 Daftar Ulasan:
                 </p>
                 {datas2 && headers2 && <Table headers={headers2} data={datas2} />}
-            </div>
+            </div>}
             </div>			
         </main>
     );

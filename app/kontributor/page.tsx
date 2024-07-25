@@ -2,7 +2,7 @@
 
 import { ChangeEvent, useState, useEffect} from 'react';
 import { query } from '@/db';
-import { Table } from '@/components/common';
+import { Spinner, Table } from '@/components/common';
 
 
 
@@ -10,6 +10,8 @@ export default function Page() {
     const [selectedValue, setSelectedValue] = useState('semua');
     const [datas, setDatas] = useState<any[]>();
     const [headers, setHeaders] = useState<string[]>();
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+
 
     const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
         setSelectedValue(event.target.value);
@@ -47,6 +49,7 @@ export default function Page() {
             const result = await query(queryValue, []);
             setDatas(result);
             if (result.length > 0) setHeaders(Object.keys(result[0]));
+            setIsLoading(false);
         }
 
         fetchData();
@@ -70,7 +73,7 @@ export default function Page() {
                 </form>
                 <div className="py-8">
                 <div className="relative overflow-x-auto shadow-md rounded-lg">
-                {datas && headers && <Table headers={headers} data={datas}/>}
+                { isLoading ? <div className="flex items-center justify-center"><Spinner lg /></div> : datas && headers && <Table headers={headers} data={datas} />}
                 </div>
                 </div>
 		</main>

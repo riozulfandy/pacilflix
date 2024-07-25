@@ -1,6 +1,6 @@
 "use client";
 
-import { Table } from "@/components/common";
+import { Spinner, Table } from "@/components/common";
 import { query } from "@/db";
 import { useAppSelector } from "@/redux/hooks";
 import { useRouter } from "next/navigation";
@@ -21,6 +21,8 @@ export default function Page({params}: Props) {
 
     const { username } = useAppSelector(state => state.auth);
     const [selectedValue, setSelectedValue] = useState('transfer');
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
         setSelectedValue(event.target.value);
@@ -28,6 +30,7 @@ export default function Page({params}: Props) {
 
     const handleSubmission = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        setIsSubmitting(true);
         let queryValue = `
         INSERT INTO TRANSACTION (
             username,
@@ -48,8 +51,10 @@ export default function Page({params}: Props) {
         `;
         query(queryValue, [username, params.paket, selectedValue]).then(() => {
 			toast.success('Berhasil berlangganan');
+            setIsSubmitting(false);
 			router.push('/langganan');
 		}).catch(() => {
+            setIsSubmitting(false);
 			toast.error('Terjadi kesalahan');
 		});
     };
@@ -75,6 +80,7 @@ export default function Page({params}: Props) {
             const result = await query(queryValue, [params.paket]);
             setDatas(result);
             if (result.length > 0) setHeaders(Object.keys(result[0]));
+            setIsLoading(false);
         }
 
         fetchData();
@@ -87,7 +93,7 @@ export default function Page({params}: Props) {
 				</h2>
                 <div className="py-8">
                 <div className="relative overflow-x-auto shadow-md rounded-lg">
-                    {datas && headers && <Table headers={headers} data={datas} />}
+                    { isLoading ? <div className="flex items-center justify-center"><Spinner lg /></div> : datas && headers && <Table headers={headers} data={datas} />}
                 </div>
                 </div>
                 <form className="max-w-sm mx-auto pb-8" onSubmit={handleSubmission}>
@@ -97,7 +103,7 @@ export default function Page({params}: Props) {
                     <option value="kredit">Kartu Kredit</option>
                     <option value="ewallet">E-Wallet</option>
                 </select>
-                <button type="submit" className="flex w-full justify-center mt-4 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-md">Bayar</button>
+                <button type="submit" className="flex w-full justify-center mt-4 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-md" disabled={isSubmitting || isLoading}>{isSubmitting || isLoading ? <Spinner sm /> : "Bayar"}</button>
                 </form>
 		</main>
 	);

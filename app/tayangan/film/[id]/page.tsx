@@ -1,6 +1,6 @@
 "use client";
 
-import { Table } from "@/components/common";
+import { Spinner, Table } from "@/components/common";
 import { query } from "@/db";
 import { useAppSelector } from "@/redux/hooks";
 import { ChangeEvent, useEffect, useState } from "react";
@@ -23,6 +23,9 @@ export default function Page({ params }: Props) {
     const [deskripsiRating, setDeskripsiRating] = useState('');
     const [slider, setSlider] = useState(0);
     const [submit, setSubmit] = useState(false);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [isSubmitting2, setIsSubmitting2] = useState<boolean>(false);
 
     const { username } = useAppSelector(state => state.auth);
 
@@ -40,6 +43,7 @@ export default function Page({ params }: Props) {
 
     const handleSubmission = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        setIsSubmitting(true);
         let queryValue = `
         INSERT INTO ULASAN (
             username,
@@ -56,15 +60,18 @@ export default function Page({ params }: Props) {
         )
         `;
         query(queryValue, [username, params.id, selectedValue, deskripsiRating]).then(() => {
+            setIsSubmitting(false);
             setSubmit(!submit);
 			toast.success('Berhasil memberikan ulasan');
 		}).catch(() => {
+            setIsSubmitting(false);
 			toast.error('Terjadi kesalahan');
 		});
     };
 
     const handleSubmission2 = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        setIsSubmitting2(true);
         const result = await query("SELECT durasi_film FROM film where film.id_tayangan = $1", [params.id]);
         const durasi = result[0].durasi_film;
         let queryValue = `
@@ -81,9 +88,11 @@ export default function Page({ params }: Props) {
         )
         `;
         query(queryValue, [username, params.id]).then(() => {
+            setIsSubmitting2(false);
             setSubmit(!submit);
 			toast.success('Berhasil menonton');
 		}).catch(() => {
+            setIsSubmitting2(false);
 			toast.error('Terjadi kesalahan');
 		});
     };
@@ -91,6 +100,7 @@ export default function Page({ params }: Props) {
 
     useEffect(() => {
         async function fetchData() {
+            setIsLoading(true);
             let queryValue = `
             SELECT 
                 T.judul,
@@ -126,6 +136,7 @@ export default function Page({ params }: Props) {
             setDatas2(result2);
             if (result.length > 0) setHeaders(Object.keys(result[0]));
             if (result2.length > 0) setHeaders2(Object.keys(result2[0]));
+            setIsLoading(false);
         }
 
         fetchData();
@@ -134,6 +145,7 @@ export default function Page({ params }: Props) {
     return (
         <main>
             <div className='relative isolate px-6 py-7 lg:px-8'>
+            {isLoading ? <div className="flex items-center justify-center"><Spinner lg /></div> : 
             <div className='mx-auto py-4 sm:py-4 lg:py-10 px-5 sm:px-5 lg:px-10 bg-neutral-900 rounded-xl'>
                 <h1 className='text-3xl font-bold tracking-tight text-white'>
                 {datas && datas[0].judul}
@@ -146,7 +158,7 @@ export default function Page({ params }: Props) {
                 </div>
                 &nbsp;
                 <div className='flex items-center justify-center'>
-                <button type="submit" className='px-4 py-2 m-2 bg-red-600 hover:bg-red-500 text-white rounded-md'>Tonton</button>
+                <button type="submit" className='px-4 py-2 m-2 bg-red-600 hover:bg-red-500 text-white rounded-md' disabled={isLoading || isSubmitting}>{isLoading || isSubmitting ? <Spinner sm /> : "Tonton"}</button>
                 </div>
                 </form>
                 <button className='px-4 py-2 m-2 bg-green-600 hover:bg-green-500 text-white rounded-md'>Download{' '}<span aria-hidden='true'>&darr;</span></button>
@@ -212,13 +224,13 @@ export default function Page({ params }: Props) {
                 </select>
                 <label htmlFor="textbox" className="block mt-4 mb-2 text-sm font-medium text-gray-300">Deskripsi Rating</label>
                 <textarea value={deskripsiRating} onChange={handleDeskripsiRating} id="textbox" className="bg-neutral-900 border border-gray-300 text-white text-sm rounded-lg focus:ring-red-600 focus:border-red-600 block w-full p-2.5" />
-                <button type="submit" className="flex w-full justify-center mt-4 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-md">Kirim</button>
+                <button type="submit" className="flex w-full justify-center mt-4 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-md" disabled={isLoading || isSubmitting2}>{isLoading || isSubmitting2 ? <Spinner sm /> : "Kirim"} </button>
                 </form>
                 <p className='text-lg font-bold text-white'>
                 Daftar Ulasan:
                 </p>
                 {datas2 && headers2 && <Table headers={headers2} data={datas2} />}
-            </div>
+            </div>}
             </div>			
         </main>
     );

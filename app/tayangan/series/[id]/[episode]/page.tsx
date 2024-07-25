@@ -1,5 +1,6 @@
 "use client";
 
+import { Spinner } from '@/components/common';
 import { query } from '@/db';
 import { useAppSelector } from '@/redux/hooks';
 import Link from 'next/link';
@@ -21,7 +22,8 @@ export default function Page({ params }: Props) {
     const [datas2, setDatas2] = useState<any[]>();
     const [headers2, setHeaders2] = useState<string[]>();
     const [slider, setSlider] = useState(0);
-
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const { username } = useAppSelector(state => state.auth);
 
     const handleSlider = (event: ChangeEvent<HTMLInputElement>) => {
@@ -30,6 +32,7 @@ export default function Page({ params }: Props) {
 
     const handleSubmission = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        setIsSubmitting(true);
         const result = await query("SELECT durasi FROM episode where id_series = $1 AND sub_judul = $2", [params.id, episode]);
         const durasi = result[0].durasi;
         let queryValue = `
@@ -46,14 +49,17 @@ export default function Page({ params }: Props) {
         )
         `;
         query(queryValue, [username, params.id]).then(() => {
+            setIsSubmitting(false);
 			toast.success('Berhasil menonton');
 		}).catch(() => {
+            setIsSubmitting(false);
 			toast.error('Terjadi kesalahan');
 		});
     };
 
     useEffect(() => {
         async function fetchData() {
+            setIsLoading(true);
             let queryValue = `
             SELECT 
                 T.judul,
@@ -79,12 +85,14 @@ export default function Page({ params }: Props) {
             setDatas2(data2);
             setHeaders(Object.keys(data[0]));
             setHeaders2(Object.keys(data2[0]));
+            setIsLoading(false);
         }
         fetchData();
     }, []);
     return (
         <main>
             <div className='relative isolate px-6 py-7 lg:px-8'>
+            {isLoading ? <div className="flex items-center justify-center"><Spinner lg /></div> : 
             <div className='mx-auto py-4 sm:py-4 lg:py-10 px-5 sm:px-5 lg:px-10 bg-neutral-900 rounded-xl'>
                 <h1 className='text-3xl font-bold tracking-tight text-white'>
                 {datas && datas[0].sub_judul}
@@ -97,7 +105,7 @@ export default function Page({ params }: Props) {
                 </div>
                 &nbsp;
                 <div className='flex items-center justify-center'>
-                <button type="submit" className='px-4 py-2 m-2 bg-red-600 hover:bg-red-500 text-white rounded-md'>Tonton</button>
+                <button type="submit" className='px-4 py-2 m-2 bg-red-600 hover:bg-red-500 text-white rounded-md'disabled={isLoading || isSubmitting}>{isLoading || isSubmitting ? <Spinner sm /> : "Tonton"}</button>
                 </div>
                 </form>
                 <p className='text-lg font-bold text-white'>
@@ -129,7 +137,7 @@ export default function Page({ params }: Props) {
                 <p className='text-lg font-bold text-white'>
                 Tanggal Rilis Episode: <span className='font-normal'>{datas && datas[0].tanggal_rilis_episode.toISOString().substring(0,10)}</span>
                 </p>
-            </div>
+            </div>}
             </div>
         </main>
     );

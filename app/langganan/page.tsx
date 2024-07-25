@@ -1,6 +1,6 @@
 'use client';
 
-import { Table } from '@/components/common';
+import { Spinner, Table } from '@/components/common';
 import { query } from '@/db';
 import { useAppSelector } from '@/redux/hooks';
 import { use, useEffect, useState } from 'react';
@@ -14,6 +14,7 @@ export default function Page() {
     const [headers2, setHeaders2] = useState<string[]>();
     const [datas3, setDatas3] = useState<any[]>();
     const [headers3, setHeaders3] = useState<string[]>();
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
 	const { username } = useAppSelector(state => state.auth);
     
@@ -80,6 +81,7 @@ export default function Page() {
             if (result.length > 0) setHeaders(Object.keys(result[0]));
             if (result2.length > 0) setHeaders2(Object.keys(result2[0]));
             if (result3.length > 0) setHeaders3(Object.keys(result3[0]));
+            setIsLoading(false);
         }
 
         fetchData();
@@ -92,7 +94,7 @@ export default function Page() {
 				</h2>
                 <div className="py-8">
                 <div className="relative overflow-x-auto shadow-md rounded-lg">
-                    {datas && headers && <Table headers={headers} data={datas} />}
+                    {isLoading ? <div className="flex items-center justify-center"><Spinner lg /></div> : datas && headers && <Table headers={headers} data={datas} />}
                 </div>
                 </div>
                 <h2 className='py-8 text-3xl font-bold tracking-tight text-white sm:text-5xl'>
@@ -100,7 +102,7 @@ export default function Page() {
 				</h2>
                 <div className="py-8">
                 <div className="relative overflow-x-auto shadow-md rounded-lg">
-                    {datas3 && headers3 && <Table headers={headers3} data={datas3} dontShowId={true} hasAction={true} linkAction='langganan'/>}
+                    {isLoading ? <div className="flex items-center justify-center"><Spinner lg /></div> : datas3 && headers3 && <Table headers={headers3} data={datas3} dontShowId={true} hasAction={true} linkAction='langganan'/>}
                 </div>
                 </div>
                 <h2 className='py-8 text-3xl font-bold tracking-tight text-white sm:text-5xl'>
@@ -108,7 +110,7 @@ export default function Page() {
 				</h2>
                 <div className="py-8">
                 <div className="relative overflow-x-auto shadow-md rounded-lg">
-                    {datas2 && headers2 && <Table headers={headers2} data={datas2} />}
+                    {isLoading ? <div className="flex items-center justify-center"><Spinner lg /></div> : datas2 && headers2 && <Table headers={headers2} data={datas2} />}
                 </div>
                 </div>
 		</main>
